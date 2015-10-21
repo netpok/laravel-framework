@@ -18,6 +18,16 @@ class ControllerInspector
         'delete', 'head', 'options',
     ];
 
+
+    /**
+     * An array of possible parent classes for parameter detection
+     *
+     * @var array
+     */
+    protected static $parameterClasses = [
+        \Illuminate\Database\Eloquent\Model::class,
+    ];
+
     /**
      * Get the routable methods for a controller.
      *
@@ -88,7 +98,7 @@ class ControllerInspector
     /**
      * Get the routable data for an index method.
      *
-     * @param  array   $data
+     * @param  array  $data
      * @param  string  $prefix
      * @return array
      */
@@ -117,7 +127,7 @@ class ControllerInspector
      */
     public function getPlainUri($name, $prefix)
     {
-        return $prefix.'/'.implode('-', array_slice(explode('_', Str::snake($name)), 1));
+        return $prefix . '/' . implode('-', array_slice(explode('_', Str::snake($name)), 1));
     }
 
     /**
@@ -130,10 +140,31 @@ class ControllerInspector
     public function addUriWildcards($uri, ReflectionMethod $method)
     {
         foreach ($method->getParameters() as $parameter) {
-            if (!$parameter->getClass()->isSubclassOf(\Illuminate\Http\Request::class)) {
+            if (!$parameter->getClass()) {
                 $uri .= '/{' . $parameter->getName() . ($parameter->isOptional() ? '?' : '') . '}';
+            } else {
+                foreach (self::$parameterClasses as $parameterClass) {
+                    if ($parameter->getClass()->isSubclassOf($parameterClass)) {
+                        $uri .= '/{' . $parameter->getName() . ($parameter->isOptional() ? '?' : '') . '}';
+                        continue 2;
+                    }
+                }
             }
+
         }
         return $uri;
+    }
+
+    /**
+     * Add class for parameter recognition
+     *
+     * @param  string|array  $classes
+     * @return void
+     */
+    public static function addParameterClass($classes){
+        if(!is_array($classes)) {
+            $classes = [$classes];
+        }
+        self::$parameterClasses = array_merge(self::$parameterClasses, $classes);
     }
 }
