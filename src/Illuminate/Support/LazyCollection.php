@@ -109,6 +109,29 @@ class LazyCollection implements Enumerable
         return new static($this->all());
     }
 
+    public function remember(){
+        $cache = [];
+        $iterator = $this->getIterator();
+
+        return new static(function () use ($iterator, &$cache) {
+            yield from $cache;
+
+            if($cache && $iterator->valid()){
+                $iterator->next();
+            }
+
+            while ($iterator->valid()) {
+                $key = $iterator->key();
+                $value = $iterator->current();
+                $cache[$key] = $value;
+
+                yield $key => $value;
+
+                $iterator->next();
+            }
+        });
+    }
+
     /**
      * Get the average value of a given key.
      *
