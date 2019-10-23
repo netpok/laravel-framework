@@ -832,9 +832,7 @@ trait EnumeratesValues
     protected function operatorForWhere($key, $operator = null, $value = null)
     {
         if (func_num_args() === 1) {
-            $value = true;
-
-            $operator = '=';
+            $operator = 'E';
         }
 
         if (func_num_args() === 2) {
@@ -845,6 +843,10 @@ trait EnumeratesValues
 
         return function ($item) use ($key, $operator, $value) {
             $retrieved = data_get($item, $key);
+
+            if($operator === 'E'){
+                return (bool) $retrieved;
+            }
 
             $strings = array_filter([$retrieved, $value], function ($value) {
                 return is_string($value) || (is_object($value) && method_exists($value, '__toString'));
