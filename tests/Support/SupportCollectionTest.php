@@ -625,9 +625,10 @@ class SupportCollectionTest extends TestCase
             $c->where('v', new HtmlString('hello'))->values()->all()
         );
 
-        $c = new $collection([['v' => 1], ['v' => 2], ['v' => null]]);
+        $object = new stdClass();
+        $c = new $collection([['v' => 1], ['v' => 2], ['v' => null], ['v' => $object]]);
         $this->assertEquals(
-            [['v' => 1], ['v' => 2]],
+            [['v' => 1], ['v' => 2], ['v' => $object]],
             $c->where('v')->values()->all()
         );
     }
